@@ -35,7 +35,7 @@
       letter-spacing: .5px;
     }
 
-    main { max-width: 900px; margin: 32px auto; padding: 0 16px 60px; }
+    main { max-width: 1100px; margin: 32px auto; padding: 0 16px 60px; }
 
     /* ---- Step cards ---- */
     .card {
@@ -88,24 +88,14 @@
       font-size: .82rem; font-weight: 600;
     }
 
-    /* File drop zone */
-    .drop-zone {
-      border: 2px dashed #cbd5e0;
-      border-radius: 10px;
-      padding: 32px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color .2s, background .2s;
-      position: relative;
+    /* API key actions row */
+    .api-key-actions {
+      display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;
     }
-    .drop-zone:hover, .drop-zone.dragover { border-color: #1a1a2e; background: #f7fafc; }
-    .drop-zone input[type=file] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    .key-saved-indicator {
+      font-size: .78rem; color: #38a169; font-weight: 600;
+      display: flex; align-items: center; gap: 4px;
     }
-    .drop-zone .icon { font-size: 2rem; margin-bottom: 8px; }
-    .drop-zone p { font-size: .88rem; color: #718096; }
-    .drop-zone strong { color: #1a1a2e; }
-    #file-name { margin-top: 10px; font-size: .82rem; color: #2d3748; font-weight: 600; }
 
     /* Buttons */
     .btn {
@@ -121,8 +111,9 @@
     .btn-danger    { background: #e94560; color: #fff; }
     .btn-outline   { background: #fff; color: #1a1a2e; border: 1.5px solid #e2e8f0; }
     .btn-sm        { padding: 7px 14px; font-size: .8rem; }
+    .btn-xs        { padding: 4px 10px; font-size: .75rem; }
 
-    /* Info box */
+    /* Info / warn box */
     .info-box {
       background: #ebf8ff; border-left: 4px solid #3182ce;
       border-radius: 6px; padding: 12px 16px;
@@ -134,7 +125,95 @@
       font-size: .83rem; color: #744210; margin-bottom: 18px;
     }
 
-    /* Preview table */
+    /* ---- Prompt template section ---- */
+    .prompt-section {
+      margin-top: 20px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .prompt-header {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f7fafc; padding: 12px 16px;
+      cursor: pointer; user-select: none;
+    }
+    .prompt-header-left {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .prompt-header h3 { font-size: .88rem; font-weight: 700; color: #4a5568; }
+    .prompt-header p  { font-size: .78rem; color: #718096; margin-top: 1px; }
+    .prompt-toggle-icon { font-size: .8rem; color: #718096; transition: transform .2s; }
+    .prompt-toggle-icon.open { transform: rotate(180deg); }
+    .prompt-body {
+      padding: 16px;
+      display: none;
+    }
+    .prompt-body.open { display: block; }
+    .prompt-textarea {
+      width: 100%;
+      min-height: 220px;
+      padding: 12px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: .8rem;
+      line-height: 1.6;
+      color: #718096;
+      background: #f7fafc;
+      resize: vertical;
+      transition: border-color .2s, background .2s, color .2s;
+    }
+    .prompt-textarea:not([disabled]):focus {
+      outline: none; border-color: #1a1a2e; background: #fff; color: #1a1a2e;
+    }
+    .prompt-placeholder-hint {
+      font-size: .75rem; color: #718096; margin-top: 8px;
+      background: #f0f4f8; border-radius: 6px; padding: 8px 12px;
+    }
+    .prompt-placeholder-hint code {
+      background: #e2e8f0; padding: 1px 5px; border-radius: 3px; font-size: .75rem;
+    }
+    .prompt-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+    /* ---- Spreadsheet ---- */
+    .spreadsheet-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 14px; }
+    .spreadsheet-table { width: 100%; border-collapse: collapse; font-size: .82rem; min-width: 800px; }
+    .spreadsheet-table th {
+      background: #f7fafc; padding: 10px 10px; text-align: left;
+      font-weight: 700; color: #4a5568; border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .spreadsheet-table td { padding: 4px 6px; border-bottom: 1px solid #f0f4f8; vertical-align: top; }
+    .spreadsheet-table tr:last-child td { border-bottom: none; }
+    .spreadsheet-table tr:hover td { background: #fafbfc; }
+    .spreadsheet-table td input {
+      width: 100%; padding: 7px 9px; border: 1.5px solid transparent;
+      border-radius: 6px; font-size: .82rem; color: #1a1a2e;
+      background: transparent; transition: border-color .15s, background .15s;
+    }
+    .spreadsheet-table td input:focus {
+      outline: none; border-color: #1a1a2e; background: #fff;
+    }
+    .spreadsheet-table td input:hover { border-color: #cbd5e0; background: #f7fafc; }
+    .col-client  { min-width: 130px; }
+    .col-title   { min-width: 200px; }
+    .col-keywords { min-width: 160px; }
+    .col-source  { min-width: 180px; }
+    .col-links   { min-width: 160px; }
+    .col-del     { width: 36px; text-align: center; }
+    .del-row-btn {
+      background: none; border: none; cursor: pointer;
+      color: #cbd5e0; font-size: 1rem; padding: 4px 6px;
+      border-radius: 4px; transition: color .15s;
+      line-height: 1;
+    }
+    .del-row-btn:hover { color: #e94560; }
+    .row-num {
+      width: 32px; text-align: center; color: #a0aec0;
+      font-size: .75rem; user-select: none;
+    }
+
+    /* Preview table (result summary) */
     .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
     table { width: 100%; border-collapse: collapse; font-size: .82rem; }
     th { background: #f7fafc; padding: 10px 14px; text-align: left;
@@ -144,7 +223,7 @@
     tr:hover td { background: #f7fafc; }
     .truncate { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* Stats row */
+    /* Stats */
     .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
     .stat {
       background: #f7fafc; border-radius: 8px; padding: 12px 18px;
@@ -190,6 +269,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Utility */
+    .mt8  { margin-top: 8px; }
     .mt12 { margin-top: 12px; }
     .mt20 { margin-top: 20px; }
     .flex-gap { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -213,30 +293,24 @@
       <div class="step-num">1</div>
       <div>
         <h2>Configuration</h2>
-        <p>Enter your Anthropic API key and upload your CSV file</p>
+        <p>API key, model settings, and article prompt</p>
       </div>
     </div>
 
-    <div class="warn-box">
-      Your API key is sent directly to the Claude API and is never stored on the server. It is only held in memory for the duration of your session.
-    </div>
-
+    <!-- API Key -->
     <div class="field">
       <label for="api-key">Anthropic API Key</label>
       <div class="api-key-wrap">
         <input id="api-key" type="password" placeholder="sk-ant-api03-..." autocomplete="off" />
         <button class="toggle-vis" onclick="toggleKey()">Show</button>
       </div>
-    </div>
-
-    <div class="field">
-      <label>Upload CSV File</label>
-      <div class="drop-zone" id="drop-zone">
-        <input type="file" id="csv-input" accept=".csv" />
-        <div class="icon">📂</div>
-        <p><strong>Click to browse</strong> or drag & drop your CSV here</p>
-        <p>Required columns: <code>Client Name, Title, Keywords, Links To Add, Status</code></p>
-        <div id="file-name"></div>
+      <div class="api-key-actions">
+        <button class="btn btn-outline btn-sm" onclick="saveApiKey()">💾 Save Key in Browser</button>
+        <button class="btn btn-outline btn-sm" id="btn-clear-key" onclick="clearApiKey()" style="display:none">🗑 Clear Saved Key</button>
+        <span class="key-saved-indicator hidden" id="key-saved-badge">✓ Key saved locally</span>
+      </div>
+      <div class="warn-box mt8" style="margin-bottom:0">
+        Your API key is sent directly to the Claude API and never stored on the server. The "Save in Browser" option stores it only in your browser's local storage — clear it when using a shared computer.
       </div>
     </div>
 
@@ -255,40 +329,74 @@
       </div>
     </div>
 
-    <button class="btn btn-primary" id="btn-upload" onclick="uploadCSV()">
-      <span>Preview CSV</span>
-    </button>
+    <!-- ---- Prompt Template (collapsible) ---- -->
+    <div class="prompt-section">
+      <div class="prompt-header" onclick="togglePromptSection()">
+        <div class="prompt-header-left">
+          <div>
+            <h3>Article Writing Prompt</h3>
+            <p>The instructions sent to Claude when generating each article</p>
+          </div>
+        </div>
+        <span class="prompt-toggle-icon" id="prompt-toggle-icon">▼</span>
+      </div>
+      <div class="prompt-body" id="prompt-body">
+        <textarea
+          id="prompt-template"
+          class="prompt-textarea"
+          disabled
+          spellcheck="false"
+        ></textarea>
+        <div class="prompt-placeholder-hint">
+          Placeholders replaced automatically: <code>{KEYWORDS}</code> &nbsp;
+          <code>{CLIENT}</code> &nbsp; <code>{LINKS}</code>
+        </div>
+        <div class="prompt-actions">
+          <button class="btn btn-outline btn-sm" id="btn-edit-prompt" onclick="enablePromptEdit()">✏️ Edit Prompt</button>
+          <button class="btn btn-outline btn-sm hidden" id="btn-lock-prompt" onclick="lockPromptEdit()">🔒 Lock / Save</button>
+          <button class="btn btn-outline btn-sm" onclick="resetPromptToDefault()">↺ Reset to Default</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- ========== STEP 2: Preview ========== -->
-  <div class="card hidden" id="card-preview">
+  <!-- ========== STEP 2: Article Data ========== -->
+  <div class="card" id="card-articles">
     <div class="card-header">
       <div class="step-num">2</div>
       <div>
-        <h2>CSV Preview</h2>
-        <p>Rows with Status = ACTIVE that will be processed</p>
+        <h2>Article Details</h2>
+        <p>Enter the articles you want to generate. All rows will be processed.</p>
       </div>
     </div>
 
-    <div class="stats" id="preview-stats"></div>
-
-    <div class="info-box">
-      Only rows where the <strong>Status</strong> column is set to <strong>ACTIVE</strong> will be processed. All other rows are ignored.
+    <div class="spreadsheet-wrap">
+      <table class="spreadsheet-table" id="articles-table">
+        <thead>
+          <tr>
+            <th class="row-num">#</th>
+            <th class="col-client">Client Name</th>
+            <th class="col-title">Title</th>
+            <th class="col-keywords">Keywords</th>
+            <th class="col-source">Source Content</th>
+            <th class="col-links">Links to Add</th>
+            <th class="col-del"></th>
+          </tr>
+        </thead>
+        <tbody id="articles-tbody">
+          <!-- rows added by JS -->
+        </tbody>
+      </table>
     </div>
 
-    <div class="table-wrap">
-      <table id="preview-table">
-        <thead id="preview-thead"></thead>
-        <tbody id="preview-tbody"></tbody>
-      </table>
+    <div class="flex-gap">
+      <button class="btn btn-outline btn-sm" onclick="addRow()">+ Add Row</button>
+      <button class="btn btn-outline btn-sm" onclick="addRows(5)">+ Add 5 Rows</button>
     </div>
 
     <div class="mt20">
       <button class="btn btn-danger" id="btn-generate" onclick="startGeneration()">
         Generate Articles
-      </button>
-      <button class="btn btn-outline mt12" style="margin-left:10px" onclick="resetUpload()">
-        Upload Different File
       </button>
     </div>
   </div>
@@ -315,7 +423,7 @@
           Download All Articles (ZIP)
         </button>
         <button class="btn btn-outline" onclick="resetAll()">
-          Start Over
+          Generate More Articles
         </button>
       </div>
     </div>
@@ -325,15 +433,49 @@
 
 <script>
   // ---- State ----
-  let uploadedFilepath = null;
-  let currentJobId    = null;
-  let totalArticles   = 0;
-  let doneArticles    = 0;
+  let currentJobId  = null;
+  let totalArticles = 0;
+  let doneArticles  = 0;
+  let defaultPromptTemplate = '';
 
   // ---- Helpers ----
   function $(id) { return document.getElementById(id); }
   function show(id) { $(id).classList.remove('hidden'); }
   function hide(id) { $(id).classList.add('hidden'); }
+
+  // ===== API KEY: localStorage =====
+  function loadSavedApiKey() {
+    const saved = localStorage.getItem('claude_api_key');
+    if (saved) {
+      $('api-key').value = saved;
+      show('key-saved-badge');
+      $('btn-clear-key').style.display = 'inline-flex';
+    }
+  }
+
+  function saveApiKey() {
+    const key = $('api-key').value.trim();
+    if (!key) { alert('Please enter an API key first.'); return; }
+    localStorage.setItem('claude_api_key', key);
+    show('key-saved-badge');
+    $('btn-clear-key').style.display = 'inline-flex';
+    // Brief visual feedback
+    const btn = document.querySelector('[onclick="saveApiKey()"]');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Saved!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  }
+
+  function clearApiKey() {
+    localStorage.removeItem('claude_api_key');
+    $('api-key').value = '';
+    hide('key-saved-badge');
+    $('btn-clear-key').style.display = 'none';
+    const btn = $('btn-clear-key');
+    // Brief feedback
+    btn.textContent = '✓ Cleared';
+    setTimeout(() => { btn.textContent = '🗑 Clear Saved Key'; }, 1500);
+  }
 
   function toggleKey() {
     const inp = $('api-key');
@@ -342,27 +484,114 @@
     btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
   }
 
-  // File input display
-  $('csv-input').addEventListener('change', e => {
-    const f = e.target.files[0];
-    $('file-name').textContent = f ? '📄 ' + f.name : '';
-  });
+  // ===== PROMPT TEMPLATE =====
+  function togglePromptSection() {
+    const body = $('prompt-body');
+    const icon = $('prompt-toggle-icon');
+    body.classList.toggle('open');
+    icon.classList.toggle('open');
+  }
 
-  // Drag & drop
-  const dz = $('drop-zone');
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-  dz.addEventListener('drop', e => {
-    e.preventDefault();
-    dz.classList.remove('dragover');
-    const f = e.dataTransfer.files[0];
-    if (f && f.name.endsWith('.csv')) {
-      const dt = new DataTransfer();
-      dt.items.add(f);
-      $('csv-input').files = dt.files;
-      $('file-name').textContent = '📄 ' + f.name;
+  async function fetchDefaultTemplate() {
+    try {
+      const res = await fetch('/default-template');
+      const data = await res.json();
+      defaultPromptTemplate = data.template || '';
+      const ta = $('prompt-template');
+      if (!ta.value) ta.value = defaultPromptTemplate;
+    } catch(e) {
+      console.warn('Could not load default template:', e);
     }
-  });
+  }
+
+  function enablePromptEdit() {
+    const ta = $('prompt-template');
+    ta.disabled = false;
+    ta.style.color = '#1a1a2e';
+    ta.style.background = '#fff';
+    ta.style.borderColor = '#1a1a2e';
+    ta.focus();
+    show('btn-lock-prompt');
+    hide('btn-edit-prompt');
+  }
+
+  function lockPromptEdit() {
+    const ta = $('prompt-template');
+    ta.disabled = true;
+    ta.style.color = '';
+    ta.style.background = '';
+    ta.style.borderColor = '';
+    hide('btn-lock-prompt');
+    show('btn-edit-prompt');
+  }
+
+  function resetPromptToDefault() {
+    $('prompt-template').value = defaultPromptTemplate;
+    lockPromptEdit();
+  }
+
+  // ===== SPREADSHEET =====
+  function addRow(data) {
+    const tbody = $('articles-tbody');
+    const rowIndex = tbody.rows.length + 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-num">${rowIndex}</td>
+      <td class="col-client"><input type="text" placeholder="e.g. Acme Corp" value="${esc(data && data['Client Name'] || '')}" /></td>
+      <td class="col-title"><input type="text" placeholder="e.g. Top 10 SEO Tips for 2025" value="${esc(data && data['Title'] || '')}" /></td>
+      <td class="col-keywords"><input type="text" placeholder="e.g. SEO, keywords, ranking" value="${esc(data && data['Keywords'] || '')}" /></td>
+      <td class="col-source"><input type="text" placeholder="Paste source content or URL" value="${esc(data && data['Source Content'] || '')}" /></td>
+      <td class="col-links"><input type="text" placeholder="https://example.com/page" value="${esc(data && data['Links To Add'] || '')}" /></td>
+      <td class="col-del"><button class="del-row-btn" title="Delete row" onclick="deleteRow(this)">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+    reindexRows();
+  }
+
+  function addRows(n) {
+    for (let i = 0; i < n; i++) addRow();
+  }
+
+  function deleteRow(btn) {
+    const tr = btn.closest('tr');
+    tr.parentNode.removeChild(tr);
+    reindexRows();
+  }
+
+  function reindexRows() {
+    const tbody = $('articles-tbody');
+    Array.from(tbody.rows).forEach((tr, i) => {
+      const numCell = tr.querySelector('.row-num');
+      if (numCell) numCell.textContent = i + 1;
+    });
+  }
+
+  function esc(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function getTableRows() {
+    const tbody = $('articles-tbody');
+    const rows = [];
+    Array.from(tbody.rows).forEach(tr => {
+      const inputs = tr.querySelectorAll('input[type=text]');
+      if (inputs.length < 5) return;
+      const row = {
+        'Client Name':    inputs[0].value.trim(),
+        'Title':          inputs[1].value.trim(),
+        'Keywords':       inputs[2].value.trim(),
+        'Source Content': inputs[3].value.trim(),
+        'Links To Add':   inputs[4].value.trim(),
+      };
+      // Include row if at least Client Name and Title are filled
+      if (row['Client Name'] && row['Title']) rows.push(row);
+    });
+    return rows;
+  }
 
   function appendLog(text, cls) {
     const log = $('log');
@@ -373,91 +602,51 @@
     log.scrollTop = log.scrollHeight;
   }
 
-  // ---- Step 1: Upload CSV ----
-  async function uploadCSV() {
-    const apiKey = $('api-key').value.trim();
-    const fileInput = $('csv-input');
-
-    if (!apiKey) { alert('Please enter your Anthropic API key.'); return; }
-    if (!fileInput.files.length) { alert('Please select a CSV file.'); return; }
-
-    const btn = $('btn-upload');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Uploading...';
-
-    const formData = new FormData();
-    formData.append('csv_file', fileInput.files[0]);
-
-    try {
-      const res = await fetch('/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (!res.ok) { alert('Error: ' + data.error); return; }
-
-      uploadedFilepath = data.filepath;
-      totalArticles    = data.active_rows;
-      renderPreview(data);
-      show('card-preview');
-      $('card-preview').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch (e) {
-      alert('Upload failed: ' + e.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<span>Preview CSV</span>';
-    }
-  }
-
-  function renderPreview(data) {
-    // Stats
-    $('preview-stats').innerHTML = `
-      <div class="stat"><div class="stat-val">${data.total_rows}</div><div class="stat-lbl">Total Rows</div></div>
-      <div class="stat"><div class="stat-val">${data.active_rows}</div><div class="stat-lbl">ACTIVE Rows</div></div>
-      <div class="stat"><div class="stat-val">${(data.columns||[]).length}</div><div class="stat-lbl">Columns Found</div></div>
-    `;
-
-    const preview = data.preview || [];
-    if (!preview.length) {
-      $('preview-tbody').innerHTML = '<tr><td colspan="10">No ACTIVE rows found.</td></tr>';
-      return;
-    }
-    const cols = Object.keys(preview[0]);
-    $('preview-thead').innerHTML = '<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
-    $('preview-tbody').innerHTML = preview.map(row =>
-      '<tr>' + cols.map(c => `<td class="truncate" title="${row[c]||''}">${row[c]||''}</td>`).join('') + '</tr>'
-    ).join('');
-  }
-
-  function resetUpload() {
-    uploadedFilepath = null;
-    hide('card-preview');
-    $('csv-input').value = '';
-    $('file-name').textContent = '';
-  }
-
-  // ---- Step 2: Generate ----
+  // ===== MAIN: Generate =====
   async function startGeneration() {
     const apiKey = $('api-key').value.trim();
-    if (!apiKey) { alert('API key missing.'); return; }
-    if (!uploadedFilepath) { alert('Please upload a CSV first.'); return; }
+    if (!apiKey) { alert('Please enter your Anthropic API key.'); return; }
+
+    const rows = getTableRows();
+    if (!rows.length) {
+      alert('Please add at least one article row with a Client Name and Title filled in.');
+      return;
+    }
+
+    const customTemplate = $('prompt-template').value.trim();
 
     const btn = $('btn-generate');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Starting...';
+    btn.innerHTML = '<span class="spinner"></span> Preparing...';
 
     try {
-      const res = await fetch('/generate', {
+      // Step 1: Submit article data
+      const submitRes = await fetch('/submit-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows }),
+      });
+      const submitData = await submitRes.json();
+      if (!submitRes.ok) { alert('Error: ' + submitData.error); return; }
+
+      totalArticles = submitData.active_rows;
+
+      // Step 2: Start generation job
+      const genRes = await fetch('/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           api_key: apiKey,
-          filepath: uploadedFilepath,
+          filepath: submitData.filepath,
           delay: parseFloat($('delay').value) || 3,
           model: $('model').value,
+          custom_template: customTemplate !== defaultPromptTemplate ? customTemplate : '',
         }),
       });
-      const data = await res.json();
-      if (!res.ok) { alert('Error: ' + data.error); btn.disabled = false; btn.textContent = 'Generate Articles'; return; }
+      const genData = await genRes.json();
+      if (!genRes.ok) { alert('Error: ' + genData.error); return; }
 
-      currentJobId = data.job_id;
+      currentJobId = genData.job_id;
       doneArticles = 0;
 
       // Show generation card
@@ -468,9 +657,10 @@
       show('card-generate');
       $('card-generate').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      listenToProgress(data.job_id);
+      listenToProgress(genData.job_id);
     } catch(e) {
       alert('Failed to start: ' + e.message);
+    } finally {
       btn.disabled = false;
       btn.innerHTML = 'Generate Articles';
     }
@@ -481,7 +671,6 @@
 
     es.onmessage = function(event) {
       const msg = JSON.parse(event.data);
-
       if (msg.type === 'ping') return;
 
       if (msg.type === 'log') {
@@ -491,7 +680,6 @@
         else if (text.includes('===') || text.includes('---')) cls = 'sep';
         appendLog(text, cls);
 
-        // Crude progress tracking
         if (text.includes('Article saved') || text.includes('✅')) {
           doneArticles++;
           const pct = totalArticles > 0 ? Math.round((doneArticles / totalArticles) * 100) : 0;
@@ -508,7 +696,6 @@
         appendLog(`✅ Successful: ${msg.successful}`, 'done');
         if (msg.failed > 0) appendLog(`❌ Failed: ${msg.failed}`, 'err');
 
-        // Show summary
         let summaryHtml = `<div class="stats">
           <div class="stat"><div class="stat-val">${msg.successful}</div><div class="stat-lbl">Articles Generated</div></div>
           <div class="stat"><div class="stat-val">${msg.failed}</div><div class="stat-lbl">Failed</div></div>
@@ -544,17 +731,21 @@
   }
 
   function resetAll() {
-    uploadedFilepath = null;
     currentJobId = null;
-    hide('card-preview');
     hide('card-generate');
-    $('csv-input').value = '';
-    $('file-name').textContent = '';
     $('log').textContent = 'Waiting for generation to start...';
     $('btn-generate').disabled = false;
     $('btn-generate').textContent = 'Generate Articles';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  // ===== INIT =====
+  (function init() {
+    loadSavedApiKey();
+    fetchDefaultTemplate();
+    // Start with 3 empty rows
+    addRow(); addRow(); addRow();
+  })();
 </script>
 </body>
 </html>
