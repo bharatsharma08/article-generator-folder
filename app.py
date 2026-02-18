@@ -92,6 +92,43 @@ def upload_csv():
         return jsonify({'error': f'Failed to parse CSV: {e}'}), 500
 
 
+@app.route('/default-template', methods=['GET'])
+def get_default_template():
+    """Return the default article prompt template."""
+    from generator import DEFAULT_ARTICLE_INSTRUCTIONS
+    return jsonify({'template': DEFAULT_ARTICLE_INSTRUCTIONS})
+
+
+@app.route('/submit-data', methods=['POST'])
+def submit_data():
+    """Accept inline article rows as JSON, save as CSV, return filepath."""
+    data = request.get_json(force=True)
+    rows = data.get('rows', [])
+
+    if not rows:
+        return jsonify({'error': 'No article rows provided'}), 400
+
+    try:
+        import pandas as pd
+        # Normalise column names to match what generator.py expects
+        df = pd.DataFrame(rows)
+
+        upload_id = str(uuid.uuid4())
+        filepath = UPLOAD_FOLDER / f"{upload_id}_inline_data.csv"
+        df.to_csv(str(filepath), index=False, encoding='utf-8')
+
+        return jsonify({
+            'upload_id': upload_id,
+            'filepath': str(filepath),
+            'total_rows': len(df),
+            'active_rows': len(df),
+            'preview': df.head(50).fillna('').to_dict('records'),
+            'columns': list(df.columns),
+        })
+    except Exception as e:
+        return jsonify({'error': f'Failed to process data: {e}'}), 500
+
+
 @app.route('/generate', methods=['POST'])
 def start_generation():
     """Start article generation as a background job and return job_id."""
@@ -100,6 +137,7 @@ def start_generation():
     filepath = (data.get('filepath') or '').strip()
     delay = float(data.get('delay', 3.0))
     model = data.get('model', 'claude-sonnet-4-20250514')
+    custom_template = (data.get('custom_template') or '').strip() or None
 
     if not api_key:
         return jsonify({'error': 'Anthropic API key is required'}), 400
@@ -120,7 +158,7 @@ def start_generation():
 
     thread = threading.Thread(
         target=_run_generation,
-        args=(job_id, api_key, filepath, str(output_dir), delay, model, job_queue),
+        args=(job_id, api_key, filepath, str(output_dir), delay, model, job_queue, custom_template),
         daemon=True,
     )
     thread.start()
@@ -128,7 +166,7 @@ def start_generation():
     return jsonify({'job_id': job_id})
 
 
-def _run_generation(job_id, api_key, filepath, output_dir, delay, model, job_queue):
+def _run_generation(job_id, api_key, filepath, output_dir, delay, model, job_queue, custom_template=None):
     """Background thread: runs the generator and pushes progress to the queue."""
     from generator import ArticleGeneratorPureDocx
 
@@ -142,6 +180,7 @@ def _run_generation(job_id, api_key, filepath, output_dir, delay, model, job_que
             output_dir=output_dir,
             delay_seconds=delay,
             model=model,
+            custom_template=custom_template,
         )
         jobs[job_id]['results'] = results
         jobs[job_id]['status'] = 'complete'

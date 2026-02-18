@@ -30,6 +30,24 @@ except ImportError:
     DOCX_AVAILABLE = False
 
 
+DEFAULT_ARTICLE_INSTRUCTIONS = """Write an SEO optimized article of 2000-2500 words using everyday English. Include naturally fitting keywords ({KEYWORDS}) in the article. Write from first person plural perspective (we, us, or using the brand name "{CLIENT}").
+Avoid using AI words like dive, delve, tapestry, etc.
+Do not include any fake examples, reviews, etc.
+Content Requirements:
+- Follow the article outline/instructions provided above closely
+- Use small paragraphs for readability
+- Include one numbered list, one bullet list and two tables
+- Base content on the company background provided above
+End the article with a strong concluding section that also acts as a CTA (maximum 3 short paragraphs) that also serves as a CTA for the client. Use an appropriate bold anchor text (up to 4 words) to link back to {LINKS}. Give a strong heading to this section.
+If pricing is involved, add a small one-line disclaimer at the end of the article and format it in italics using *italic text* format.
+Write the complete article in markdown format with:
+- **bold text** for keywords and emphasis
+- *italic text* for disclaimers
+- [link text](URL) for hyperlinks
+- Proper table formatting with | pipes |
+- Lists using - or numbered format"""
+
+
 class ArticleGeneratorPureDocx:
     def __init__(self, api_key: str, progress_callback: Optional[Callable] = None):
         """Initialize with Anthropic API key and optional progress callback."""
@@ -157,8 +175,15 @@ Write only the instruction paragraph, nothing else."""
             return (f"This blog post should focus on {title}, covering key aspects relevant to "
                     f"{client_name}'s expertise. The goal is to educate readers.")
 
-    def create_dynamic_prompt(self, row_data: dict) -> str:
+    def create_dynamic_prompt(self, row_data: dict, custom_template: str = None) -> str:
         instruction = row_data.get('Instruction', '')
+        template = custom_template if custom_template and custom_template.strip() else DEFAULT_ARTICLE_INSTRUCTIONS
+        instructions_text = (
+            template
+            .replace('{KEYWORDS}', row_data.get('Keywords', ''))
+            .replace('{CLIENT}', row_data.get('Client Name', ''))
+            .replace('{LINKS}', row_data.get('Links To Add', ''))
+        )
         return f"""Title: {row_data.get('Title', '')}
 Keywords: {row_data.get('Keywords', '')}
 Client: {row_data.get('Client Name', '')}
@@ -167,22 +192,7 @@ Contact Link: {row_data.get('Links To Add', '')}
 Website: {row_data.get('Website Link', '')}
 Article Outline/Instructions:
 {instruction if instruction else "No specific outline provided. Write a comprehensive article covering the topic thoroughly."}
-Write an SEO optimized article of 2000-2500 words using everyday English. Include naturally fitting keywords ({row_data.get('Keywords', '')}) in the article. Write from first person plural perspective (we, us, or using the brand name "{row_data.get('Client Name', '')}").
-Avoid using AI words like dive, delve, tapestry, etc.
-Do not include any fake examples, reviews, etc.
-Content Requirements:
-- Follow the article outline/instructions provided above closely
-- Use small paragraphs for readability
-- Include one numbered list, one bullet list and two tables
-- Base content on the company background provided: {row_data.get('Background', '')}
-End the article with a strong concluding section that also acts as a CTA (maximum 3 short paragraphs) that also serves as a CTA for the client. Use an appropriate bold anchor text (up to 4 words) to link back to {row_data.get('Links To Add', '')}. Give a strong heading to this section.
-If pricing is involved, add a small one-line disclaimer at the end of the article and format it in italics using *italic text* format.
-Write the complete article in markdown format with:
-- **bold text** for keywords and emphasis
-- *italic text* for disclaimers
-- [link text](URL) for hyperlinks
-- Proper table formatting with | pipes |
-- Lists using - or numbered format"""
+{instructions_text}"""
 
     def send_to_anthropic(self, prompt: str, model: str = "claude-sonnet-4-20250514") -> str:
         message = self.client.messages.create(
@@ -322,7 +332,8 @@ Write the complete article in markdown format with:
 
     def process_csv_file(self, csv_file_path: str, output_dir: str,
                          delay_seconds: float = 3.0,
-                         model: str = "claude-sonnet-4-20250514") -> list:
+                         model: str = "claude-sonnet-4-20250514",
+                         custom_template: str = None) -> list:
         """Process the CSV and generate articles, saving into output_dir."""
         try:
             try:
@@ -423,7 +434,7 @@ Write the complete article in markdown format with:
 
                 # Step 4: Generate article
                 self.log("\n📝 Step 3/3: Generating article...")
-                prompt = self.create_dynamic_prompt(row_dict)
+                prompt = self.create_dynamic_prompt(row_dict, custom_template=custom_template)
                 article_content = self.send_to_anthropic(prompt, model)
 
                 # Step 5: Save
