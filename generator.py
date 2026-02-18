@@ -353,6 +353,9 @@ Article Outline/Instructions:
             self.log(f"Error: Missing required columns: {missing_cols}")
             return []
 
+        # Check before we add Status as an optional column
+        has_status_col = 'Status' in df.columns
+
         for col in optional_cols:
             if col not in df.columns:
                 df[col] = ''
@@ -363,14 +366,15 @@ Article Outline/Instructions:
         df_clean = df.dropna(subset=['Client Name', 'Title'])
         df_clean = df_clean[df_clean['Title'].str.strip() != '']
 
-        if 'Status' in df.columns:
+        # Only filter by Status if the source data actually had a Status column
+        if has_status_col:
             df_clean = df_clean[df_clean['Status'].str.upper().str.strip() == 'ACTIVE']
 
         if len(df_clean) == 0:
             self.log("⚠️ No rows with Status='ACTIVE' found. Nothing to process.")
             return []
 
-        self.log(f"Processing {len(df_clean)} rows with Status='ACTIVE'")
+        self.log(f"Processing {len(df_clean)} rows")
 
         # Create client-specific folders inside output_dir
         unique_clients = df_clean['Client Name'].unique()
