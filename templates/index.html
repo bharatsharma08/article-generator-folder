@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Article Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+    }
+    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.3px; }
+    header p  { font-size: .85rem; color: #a0aec0; margin-top: 3px; }
+    .badge {
+      background: #e94560;
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: .5px;
+    }
+
+    main { max-width: 900px; margin: 32px auto; padding: 0 16px 60px; }
+
+    /* ---- Step cards ---- */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .step-num {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #1a1a2e;
+      color: #fff;
+      font-size: .85rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-header h2 { font-size: 1.05rem; font-weight: 700; }
+    .card-header p  { font-size: .82rem; color: #718096; margin-top: 2px; }
+
+    /* ---- Form elements ---- */
+    label { display: block; font-size: .82rem; font-weight: 600; margin-bottom: 6px; color: #4a5568; }
+    input[type=text], input[type=password], input[type=number], select {
+      width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0;
+      border-radius: 8px; font-size: .9rem; color: #1a1a2e;
+      transition: border-color .2s;
+      background: #fafafa;
+    }
+    input:focus, select:focus { outline: none; border-color: #1a1a2e; background: #fff; }
+
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 600px) { .input-row { grid-template-columns: 1fr; } }
+
+    .field { margin-bottom: 16px; }
+
+    /* API key wrapper */
+    .api-key-wrap { position: relative; }
+    .api-key-wrap input { padding-right: 50px; }
+    .toggle-vis {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: #718096;
+      font-size: .82rem; font-weight: 600;
+    }
+
+    /* File drop zone */
+    .drop-zone {
+      border: 2px dashed #cbd5e0;
+      border-radius: 10px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #1a1a2e; background: #f7fafc; }
+    .drop-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-zone .icon { font-size: 2rem; margin-bottom: 8px; }
+    .drop-zone p { font-size: .88rem; color: #718096; }
+    .drop-zone strong { color: #1a1a2e; }
+    #file-name { margin-top: 10px; font-size: .82rem; color: #2d3748; font-weight: 600; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 22px; border-radius: 8px; font-size: .9rem;
+      font-weight: 700; cursor: pointer; border: none;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-primary   { background: #1a1a2e; color: #fff; }
+    .btn-success   { background: #38a169; color: #fff; }
+    .btn-danger    { background: #e94560; color: #fff; }
+    .btn-outline   { background: #fff; color: #1a1a2e; border: 1.5px solid #e2e8f0; }
+    .btn-sm        { padding: 7px 14px; font-size: .8rem; }
+
+    /* Info box */
+    .info-box {
+      background: #ebf8ff; border-left: 4px solid #3182ce;
+      border-radius: 6px; padding: 12px 16px;
+      font-size: .83rem; color: #2c5282; margin-bottom: 18px;
+    }
+    .warn-box {
+      background: #fffbeb; border-left: 4px solid #d69e2e;
+      border-radius: 6px; padding: 12px 16px;
+      font-size: .83rem; color: #744210; margin-bottom: 18px;
+    }
+
+    /* Preview table */
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    th { background: #f7fafc; padding: 10px 14px; text-align: left;
+         font-weight: 700; color: #4a5568; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+    td { padding: 9px 14px; border-bottom: 1px solid #f0f4f8; color: #2d3748; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f7fafc; }
+    .truncate { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Stats row */
+    .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stat {
+      background: #f7fafc; border-radius: 8px; padding: 12px 18px;
+      flex: 1; min-width: 120px;
+    }
+    .stat-val { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; }
+    .stat-lbl { font-size: .75rem; color: #718096; margin-top: 2px; }
+
+    /* Progress log */
+    #log {
+      background: #1a1a2e; color: #a0f0a0; font-family: 'Courier New', monospace;
+      font-size: .78rem; line-height: 1.6; border-radius: 10px;
+      padding: 16px 18px; height: 340px; overflow-y: auto;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    #log .err  { color: #fc8181; }
+    #log .done { color: #fbd38d; font-weight: bold; }
+    #log .sep  { color: #4a5568; }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      background: #e2e8f0; border-radius: 99px; height: 8px; margin-bottom: 16px; overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%; background: linear-gradient(90deg, #38a169, #48bb78);
+      border-radius: 99px; width: 0%; transition: width .4s ease;
+    }
+
+    /* Result badges */
+    .badge-ok  { background: #c6f6d5; color: #276749; padding: 2px 8px; border-radius: 4px; font-size:.75rem; font-weight:700; }
+    .badge-err { background: #fed7d7; color: #9b2c2c; padding: 2px 8px; border-radius: 4px; font-size:.75rem; font-weight:700; }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Utility */
+    .mt12 { margin-top: 12px; }
+    .mt20 { margin-top: 20px; }
+    .flex-gap { display: flex; gap: 12px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Article Generator</h1>
+    <p>Generate SEO-optimised .docx articles using Claude AI</p>
+  </div>
+  <span class="badge">WEB</span>
+</header>
+
+<main>
+
+  <!-- ========== STEP 1: Config ========== -->
+  <div class="card" id="card-config">
+    <div class="card-header">
+      <div class="step-num">1</div>
+      <div>
+        <h2>Configuration</h2>
+        <p>Enter your Anthropic API key and upload your CSV file</p>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      Your API key is sent directly to the Claude API and is never stored on the server. It is only held in memory for the duration of your session.
+    </div>
+
+    <div class="field">
+      <label for="api-key">Anthropic API Key</label>
+      <div class="api-key-wrap">
+        <input id="api-key" type="password" placeholder="sk-ant-api03-..." autocomplete="off" />
+        <button class="toggle-vis" onclick="toggleKey()">Show</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Upload CSV File</label>
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="csv-input" accept=".csv" />
+        <div class="icon">📂</div>
+        <p><strong>Click to browse</strong> or drag & drop your CSV here</p>
+        <p>Required columns: <code>Client Name, Title, Keywords, Links To Add, Status</code></p>
+        <div id="file-name"></div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <div class="field">
+        <label for="delay">Delay between API calls (seconds)</label>
+        <input id="delay" type="number" value="3" min="1" max="30" step="0.5" />
+      </div>
+      <div class="field">
+        <label for="model">Claude model</label>
+        <select id="model">
+          <option value="claude-sonnet-4-20250514">claude-sonnet-4 (Recommended)</option>
+          <option value="claude-opus-4-6">claude-opus-4 (Most capable, slower)</option>
+          <option value="claude-haiku-4-5-20251001">claude-haiku-4 (Fastest, cheapest)</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-upload" onclick="uploadCSV()">
+      <span>Preview CSV</span>
+    </button>
+  </div>
+
+  <!-- ========== STEP 2: Preview ========== -->
+  <div class="card hidden" id="card-preview">
+    <div class="card-header">
+      <div class="step-num">2</div>
+      <div>
+        <h2>CSV Preview</h2>
+        <p>Rows with Status = ACTIVE that will be processed</p>
+      </div>
+    </div>
+
+    <div class="stats" id="preview-stats"></div>
+
+    <div class="info-box">
+      Only rows where the <strong>Status</strong> column is set to <strong>ACTIVE</strong> will be processed. All other rows are ignored.
+    </div>
+
+    <div class="table-wrap">
+      <table id="preview-table">
+        <thead id="preview-thead"></thead>
+        <tbody id="preview-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="mt20">
+      <button class="btn btn-danger" id="btn-generate" onclick="startGeneration()">
+        Generate Articles
+      </button>
+      <button class="btn btn-outline mt12" style="margin-left:10px" onclick="resetUpload()">
+        Upload Different File
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== STEP 3: Generation ========== -->
+  <div class="card hidden" id="card-generate">
+    <div class="card-header">
+      <div class="step-num">3</div>
+      <div>
+        <h2>Generating Articles</h2>
+        <p>Live progress — do not close this tab</p>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+    <div id="progress-label" style="font-size:.82rem;color:#718096;margin-bottom:14px;"></div>
+
+    <div id="log">Waiting for generation to start...</div>
+
+    <div id="complete-section" class="hidden mt20">
+      <div id="summary-box" style="margin-bottom:16px;"></div>
+      <div class="flex-gap">
+        <button class="btn btn-success" id="btn-download" onclick="downloadResults()">
+          Download All Articles (ZIP)
+        </button>
+        <button class="btn btn-outline" onclick="resetAll()">
+          Start Over
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ---- State ----
+  let uploadedFilepath = null;
+  let currentJobId    = null;
+  let totalArticles   = 0;
+  let doneArticles    = 0;
+
+  // ---- Helpers ----
+  function $(id) { return document.getElementById(id); }
+  function show(id) { $(id).classList.remove('hidden'); }
+  function hide(id) { $(id).classList.add('hidden'); }
+
+  function toggleKey() {
+    const inp = $('api-key');
+    const btn = document.querySelector('.toggle-vis');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+  }
+
+  // File input display
+  $('csv-input').addEventListener('change', e => {
+    const f = e.target.files[0];
+    $('file-name').textContent = f ? '📄 ' + f.name : '';
+  });
+
+  // Drag & drop
+  const dz = $('drop-zone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f && f.name.endsWith('.csv')) {
+      const dt = new DataTransfer();
+      dt.items.add(f);
+      $('csv-input').files = dt.files;
+      $('file-name').textContent = '📄 ' + f.name;
+    }
+  });
+
+  function appendLog(text, cls) {
+    const log = $('log');
+    const line = document.createElement('span');
+    if (cls) line.className = cls;
+    line.textContent = text + '\n';
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // ---- Step 1: Upload CSV ----
+  async function uploadCSV() {
+    const apiKey = $('api-key').value.trim();
+    const fileInput = $('csv-input');
+
+    if (!apiKey) { alert('Please enter your Anthropic API key.'); return; }
+    if (!fileInput.files.length) { alert('Please select a CSV file.'); return; }
+
+    const btn = $('btn-upload');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Uploading...';
+
+    const formData = new FormData();
+    formData.append('csv_file', fileInput.files[0]);
+
+    try {
+      const res = await fetch('/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) { alert('Error: ' + data.error); return; }
+
+      uploadedFilepath = data.filepath;
+      totalArticles    = data.active_rows;
+      renderPreview(data);
+      show('card-preview');
+      $('card-preview').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      alert('Upload failed: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Preview CSV</span>';
+    }
+  }
+
+  function renderPreview(data) {
+    // Stats
+    $('preview-stats').innerHTML = `
+      <div class="stat"><div class="stat-val">${data.total_rows}</div><div class="stat-lbl">Total Rows</div></div>
+      <div class="stat"><div class="stat-val">${data.active_rows}</div><div class="stat-lbl">ACTIVE Rows</div></div>
+      <div class="stat"><div class="stat-val">${(data.columns||[]).length}</div><div class="stat-lbl">Columns Found</div></div>
+    `;
+
+    const preview = data.preview || [];
+    if (!preview.length) {
+      $('preview-tbody').innerHTML = '<tr><td colspan="10">No ACTIVE rows found.</td></tr>';
+      return;
+    }
+    const cols = Object.keys(preview[0]);
+    $('preview-thead').innerHTML = '<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+    $('preview-tbody').innerHTML = preview.map(row =>
+      '<tr>' + cols.map(c => `<td class="truncate" title="${row[c]||''}">${row[c]||''}</td>`).join('') + '</tr>'
+    ).join('');
+  }
+
+  function resetUpload() {
+    uploadedFilepath = null;
+    hide('card-preview');
+    $('csv-input').value = '';
+    $('file-name').textContent = '';
+  }
+
+  // ---- Step 2: Generate ----
+  async function startGeneration() {
+    const apiKey = $('api-key').value.trim();
+    if (!apiKey) { alert('API key missing.'); return; }
+    if (!uploadedFilepath) { alert('Please upload a CSV first.'); return; }
+
+    const btn = $('btn-generate');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Starting...';
+
+    try {
+      const res = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: apiKey,
+          filepath: uploadedFilepath,
+          delay: parseFloat($('delay').value) || 3,
+          model: $('model').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert('Error: ' + data.error); btn.disabled = false; btn.textContent = 'Generate Articles'; return; }
+
+      currentJobId = data.job_id;
+      doneArticles = 0;
+
+      // Show generation card
+      $('log').textContent = '';
+      hide('complete-section');
+      $('progress-bar').style.width = '0%';
+      $('progress-label').textContent = '';
+      show('card-generate');
+      $('card-generate').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      listenToProgress(data.job_id);
+    } catch(e) {
+      alert('Failed to start: ' + e.message);
+      btn.disabled = false;
+      btn.innerHTML = 'Generate Articles';
+    }
+  }
+
+  function listenToProgress(jobId) {
+    const es = new EventSource('/progress/' + jobId);
+
+    es.onmessage = function(event) {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === 'ping') return;
+
+      if (msg.type === 'log') {
+        const text = msg.message;
+        let cls = '';
+        if (text.includes('Error') || text.includes('✗') || text.includes('❌')) cls = 'err';
+        else if (text.includes('===') || text.includes('---')) cls = 'sep';
+        appendLog(text, cls);
+
+        // Crude progress tracking
+        if (text.includes('Article saved') || text.includes('✅')) {
+          doneArticles++;
+          const pct = totalArticles > 0 ? Math.round((doneArticles / totalArticles) * 100) : 0;
+          $('progress-bar').style.width = pct + '%';
+          $('progress-label').textContent = `${doneArticles} / ${totalArticles} articles completed`;
+        }
+      }
+
+      if (msg.type === 'complete') {
+        es.close();
+        $('progress-bar').style.width = '100%';
+        $('progress-label').textContent = 'Done!';
+        appendLog('\n=== GENERATION COMPLETE ===', 'done');
+        appendLog(`✅ Successful: ${msg.successful}`, 'done');
+        if (msg.failed > 0) appendLog(`❌ Failed: ${msg.failed}`, 'err');
+
+        // Show summary
+        let summaryHtml = `<div class="stats">
+          <div class="stat"><div class="stat-val">${msg.successful}</div><div class="stat-lbl">Articles Generated</div></div>
+          <div class="stat"><div class="stat-val">${msg.failed}</div><div class="stat-lbl">Failed</div></div>
+        </div>`;
+        if (msg.results && msg.results.length) {
+          summaryHtml += '<div class="table-wrap"><table><thead><tr><th>Client</th><th>Title</th><th>Status</th></tr></thead><tbody>';
+          summaryHtml += msg.results.map(r =>
+            `<tr><td>${r.client}</td><td class="truncate">${r.title}</td><td>${r.success ? '<span class="badge-ok">OK</span>' : '<span class="badge-err">' + (r.error||'Error') + '</span>'}</td></tr>`
+          ).join('');
+          summaryHtml += '</tbody></table></div>';
+        }
+        $('summary-box').innerHTML = summaryHtml;
+        show('complete-section');
+      }
+
+      if (msg.type === 'error') {
+        es.close();
+        appendLog('\n=== ERROR: ' + msg.message, 'err');
+        show('complete-section');
+        $('summary-box').innerHTML = `<div class="warn-box">Generation failed: ${msg.message}</div>`;
+      }
+    };
+
+    es.onerror = function() {
+      es.close();
+      appendLog('\n⚠️ Connection to server lost. Check if the server is still running.', 'err');
+    };
+  }
+
+  function downloadResults() {
+    if (!currentJobId) return;
+    window.location.href = '/download/' + currentJobId;
+  }
+
+  function resetAll() {
+    uploadedFilepath = null;
+    currentJobId = null;
+    hide('card-preview');
+    hide('card-generate');
+    $('csv-input').value = '';
+    $('file-name').textContent = '';
+    $('log').textContent = 'Waiting for generation to start...';
+    $('btn-generate').disabled = false;
+    $('btn-generate').textContent = 'Generate Articles';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
