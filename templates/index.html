@@ -370,6 +370,11 @@
       </div>
     </div>
 
+    <div class="info-box" style="margin-bottom:14px;">
+      <strong>Tip:</strong> Select and copy rows directly from <strong>Excel</strong> or <strong>Google Sheets</strong> and paste into any cell below — the data will fill across columns and down rows automatically.
+      Column order: <strong>Client Name → Title → Keywords → Source Content → Links to Add</strong>
+    </div>
+
     <div class="spreadsheet-wrap">
       <table class="spreadsheet-table" id="articles-table">
         <thead>
@@ -739,12 +744,79 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // ===== PASTE FROM EXCEL / GOOGLE SHEETS =====
+  function handleTablePaste(e) {
+    const input = e.target;
+    if (input.tagName !== 'INPUT') return;
+    const td = input.closest('td');
+    const tr = input.closest('tr');
+    if (!td || !tr) return;
+
+    const clipText = (e.clipboardData || window.clipboardData).getData('text');
+    // Only intercept multi-cell pastes (tab = multiple columns, newline = multiple rows)
+    if (!clipText.includes('\t') && !clipText.includes('\n')) return;
+
+    e.preventDefault();
+
+    const tbody = $('articles-tbody');
+
+    // Find which row in tbody we are pasting into
+    const allRows = Array.from(tbody.rows);
+    const startRowIdx = allRows.indexOf(tr);
+    if (startRowIdx < 0) return;
+
+    // Find which data-column the focused input belongs to
+    const rowInputs = Array.from(tr.querySelectorAll('input[type=text]'));
+    const startColIdx = rowInputs.indexOf(input);
+    if (startColIdx < 0) return;
+
+    const NUM_COLS = 5; // Client Name, Title, Keywords, Source Content, Links To Add
+
+    // Parse TSV (Excel/Sheets clipboard format)
+    const pastedRows = clipText
+      .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+      .replace(/\n$/, '')          // strip trailing newline
+      .split('\n')
+      .map(row => row.split('\t'));
+
+    pastedRows.forEach((pastedCols, rowOffset) => {
+      const targetRowIdx = startRowIdx + rowOffset;
+
+      // Auto-add rows if the paste extends beyond existing rows
+      while (tbody.rows.length <= targetRowIdx) addRow();
+
+      const targetRow = tbody.rows[targetRowIdx];
+      const targetInputs = Array.from(targetRow.querySelectorAll('input[type=text]'));
+
+      pastedCols.forEach((cellVal, colOffset) => {
+        const colIdx = startColIdx + colOffset;
+        if (colIdx < NUM_COLS && targetInputs[colIdx]) {
+          targetInputs[colIdx].value = cellVal.trim();
+        }
+      });
+    });
+
+    reindexRows();
+
+    // Move focus to the cell after the last pasted block
+    const lastRowIdx = Math.min(startRowIdx + pastedRows.length - 1, tbody.rows.length - 1);
+    const lastRow = tbody.rows[lastRowIdx];
+    if (lastRow) {
+      const inputs = lastRow.querySelectorAll('input[type=text]');
+      const nextColIdx = startColIdx + (pastedRows[0] ? pastedRows[0].length : 1);
+      const focusTarget = inputs[Math.min(nextColIdx, NUM_COLS - 1)] || inputs[inputs.length - 1];
+      if (focusTarget) focusTarget.focus();
+    }
+  }
+
   // ===== INIT =====
   (function init() {
     loadSavedApiKey();
     fetchDefaultTemplate();
     // Start with 3 empty rows
     addRow(); addRow(); addRow();
+    // Single paste listener on tbody covers all cells, including dynamically added rows
+    $('articles-tbody').addEventListener('paste', handleTablePaste, true);
   })();
 </script>
 </body>
