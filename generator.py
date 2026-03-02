@@ -363,6 +363,10 @@ Article Outline/Instructions:
         for col in optional_cols:
             df[col] = df[col].astype(str).replace('nan', '')
 
+        # Also sanitize required cols so empty cells become '' not NaN float
+        for col in required_cols:
+            df[col] = df[col].fillna('').astype(str).replace('nan', '')
+
         df_clean = df.dropna(subset=['Client Name', 'Title'])
         df_clean = df_clean[df_clean['Title'].str.strip() != '']
 

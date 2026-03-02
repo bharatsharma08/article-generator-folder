@@ -195,6 +195,16 @@
       outline: none; border-color: #1a1a2e; background: #fff;
     }
     .spreadsheet-table td input:hover { border-color: #cbd5e0; background: #f7fafc; }
+    .spreadsheet-table td textarea {
+      width: 100%; padding: 7px 9px; border: 1.5px solid transparent;
+      border-radius: 6px; font-size: .82rem; color: #1a1a2e;
+      background: transparent; transition: border-color .15s, background .15s;
+      resize: vertical; min-height: 34px; max-height: 120px;
+      font-family: inherit; line-height: 1.4; box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .spreadsheet-table td textarea:focus { outline: none; border-color: #1a1a2e; background: #fff; }
+    .spreadsheet-table td textarea:hover { border-color: #cbd5e0; background: #f7fafc; }
     .col-client  { min-width: 130px; }
     .col-title   { min-width: 200px; }
     .col-keywords { min-width: 160px; }
@@ -545,7 +555,7 @@
       <td class="col-client"><input type="text" placeholder="e.g. Acme Corp" value="${esc(data && data['Client Name'] || '')}" /></td>
       <td class="col-title"><input type="text" placeholder="e.g. Top 10 SEO Tips for 2025" value="${esc(data && data['Title'] || '')}" /></td>
       <td class="col-keywords"><input type="text" placeholder="e.g. SEO, keywords, ranking" value="${esc(data && data['Keywords'] || '')}" /></td>
-      <td class="col-source"><input type="text" placeholder="Paste source content or URL" value="${esc(data && data['Source Content'] || '')}" /></td>
+      <td class="col-source"><textarea class="source-content-ta" placeholder="Paste source content or URL" rows="1">${esc(data && data['Source Content'] || '')}</textarea></td>
       <td class="col-links"><input type="text" placeholder="https://example.com/page" value="${esc(data && data['Links To Add'] || '')}" /></td>
       <td class="col-del"><button class="del-row-btn" title="Delete row" onclick="deleteRow(this)">✕</button></td>
     `;
@@ -584,13 +594,14 @@
     const rows = [];
     Array.from(tbody.rows).forEach(tr => {
       const inputs = tr.querySelectorAll('input[type=text]');
-      if (inputs.length < 5) return;
+      const sourceTA = tr.querySelector('.source-content-ta');
+      if (inputs.length < 4) return;
       const row = {
         'Client Name':    inputs[0].value.trim(),
         'Title':          inputs[1].value.trim(),
         'Keywords':       inputs[2].value.trim(),
-        'Source Content': inputs[3].value.trim(),
-        'Links To Add':   inputs[4].value.trim(),
+        'Source Content': sourceTA ? sourceTA.value.trim() : '',
+        'Links To Add':   inputs[3].value.trim(),
       };
       // Include row if at least Client Name and Title are filled
       if (row['Client Name'] && row['Title']) rows.push(row);
@@ -745,8 +756,17 @@
   }
 
   // ===== PASTE FROM EXCEL / GOOGLE SHEETS =====
+  // Returns all 5 editable cells in column order: Client, Title, Keywords, Source (textarea), Links
+  function getRowInputs(tr) {
+    const textInputs = Array.from(tr.querySelectorAll('input[type=text]'));
+    const sourceTA = tr.querySelector('.source-content-ta');
+    // textInputs = [Client(0), Title(1), Keywords(2), Links(3)]
+    return [...textInputs.slice(0, 3), sourceTA, textInputs[3]].filter(Boolean);
+  }
+
   function handleTablePaste(e) {
     const input = e.target;
+    // Let textarea handle its own paste natively (preserves newlines in Source Content)
     if (input.tagName !== 'INPUT') return;
     const td = input.closest('td');
     const tr = input.closest('tr');
@@ -766,7 +786,7 @@
     if (startRowIdx < 0) return;
 
     // Find which data-column the focused input belongs to
-    const rowInputs = Array.from(tr.querySelectorAll('input[type=text]'));
+    const rowInputs = getRowInputs(tr);
     const startColIdx = rowInputs.indexOf(input);
     if (startColIdx < 0) return;
 
@@ -786,7 +806,7 @@
       while (tbody.rows.length <= targetRowIdx) addRow();
 
       const targetRow = tbody.rows[targetRowIdx];
-      const targetInputs = Array.from(targetRow.querySelectorAll('input[type=text]'));
+      const targetInputs = getRowInputs(targetRow);
 
       pastedCols.forEach((cellVal, colOffset) => {
         const colIdx = startColIdx + colOffset;
@@ -802,9 +822,9 @@
     const lastRowIdx = Math.min(startRowIdx + pastedRows.length - 1, tbody.rows.length - 1);
     const lastRow = tbody.rows[lastRowIdx];
     if (lastRow) {
-      const inputs = lastRow.querySelectorAll('input[type=text]');
+      const allInputs = getRowInputs(lastRow);
       const nextColIdx = startColIdx + (pastedRows[0] ? pastedRows[0].length : 1);
-      const focusTarget = inputs[Math.min(nextColIdx, NUM_COLS - 1)] || inputs[inputs.length - 1];
+      const focusTarget = allInputs[Math.min(nextColIdx, NUM_COLS - 1)] || allInputs[allInputs.length - 1];
       if (focusTarget) focusTarget.focus();
     }
   }
